@@ -1,8 +1,11 @@
 package services
 
+import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.concurrent.atomic.AtomicInteger
+import akka.http.scaladsl.model.headers.Date
 import javax.inject._
+
 import scala.collection.mutable.ListBuffer
 
 /**
@@ -12,8 +15,6 @@ import scala.collection.mutable.ListBuffer
  */
 trait CRUD {
   def nextUser(): ListBuffer[User]
-
-  def getName(): String
 }
 
 /**
@@ -29,14 +30,11 @@ trait CRUD {
 
 @Singleton
 class AtomicCRUD extends CRUD {
-  var userList: ListBuffer[User] = ListBuffer()
-  private val atomicCRUD = new AtomicInteger(0)
-  private val name = new String()
+  val userList: ListBuffer[User] = ListBuffer()
+  val atomicCRUD = new AtomicInteger(0)
 
   override def nextUser(): ListBuffer[User] = {
     atomicCRUD.getAndAdd(1)
     userList += User("User" + atomicCRUD, "Login", "mail", Calendar.getInstance().get(Calendar.DATE))
   }
-
-  override def getName(): String = name;
 }
