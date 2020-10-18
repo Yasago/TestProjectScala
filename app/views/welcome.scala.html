@@ -1,0 +1,22 @@
+@(message: String, style: String = "scala") 
+
+@defining(play.core.PlayVersion.current) { version =>
+
+<section id="top">
+  <div class="wrapper">
+    <h1><a>@message</a></h1>
+  </div>
+</section>
+
+<div id="content" class="wrapper doc">
+
+<article>
+    <h2>CRUD</h2>
+    <p>
+        <a href="@routes.CRUDController.count">Click here for the CRUD action!</a>
+    </p>
+
+</article>
+
+</div>
+}
