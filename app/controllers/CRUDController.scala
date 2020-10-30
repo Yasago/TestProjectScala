@@ -1,23 +1,44 @@
 package controllers
 
 import javax.inject._
+import play.api.libs.json.{JsValue, Json, Writes}
 import play.api.mvc._
-import services.CRUD
+import services.{User, UserDAO}
 
-/**
- * This controller demonstrates how to use dependency injection to
- * bind a component into a controller class. The class creates an
- * `Action` that shows an incrementing count to users. The [[CRUD]]
- * object is injected by the Guice dependency injection system.
- */
 @Singleton
-class CRUDController @Inject()(cc: ControllerComponents,
-                               CRUD: CRUD) extends AbstractController(cc) {
+class CRUDController @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
 
-  /**
-   * Create an action that responds with the [[CRUD]]'s current
-   * count. The result is plain text. This `Action` is mapped to
-   * `GET /count` requests by an entry in the `routes` config file.
-   */
-  def count = Action { Ok(CRUD.nextUser().toString) }
+  def userReads(json: JsValue): User = {
+    val name = (json \ "name").as[String]
+    val login = (json \ "login").as[String]
+    val mail = (json \ "mail").as[String]
+    new User(name, login, mail)
+  }
+
+  implicit val userWrites: Writes[User] = (user: User) => Json.obj(
+    "name" -> user.getName,
+    "login" -> user.getLogin,
+    "mail" -> user.getMail,
+    "registrationTime" -> user.getRegistrationTime
+  )
+
+  def index: Action[AnyContent] = Action {Ok}
+
+  def getAllUsers: Action[AnyContent] = Action{Ok(Json.toJson(UserDAO.getAllUsers))}
+
+  def getUser(login: String): Action[AnyContent] = Action{Ok(Json.toJson(UserDAO.getUser(login)))}
+
+  def deleteUser(login: String): Action[AnyContent] = Action{Ok(Json.toJson(UserDAO.deleteUser(login)))}
+
+  def addUser(): Action[AnyContent] = Action { request =>
+    val jsonUser = request.body.asJson.get
+    UserDAO.addUser(userReads(jsonUser))
+    Ok
+  }
+
+  def updateUser(): Action[AnyContent] = Action { request =>
+    val jsonUser = request.body.asJson.get
+    UserDAO.updateUser(userReads(jsonUser))
+    Ok
+  }
 }
